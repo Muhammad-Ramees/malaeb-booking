@@ -199,13 +199,16 @@ class CourtBookingSystem {
         this.submitBtn.textContent = 'Booking...';
 
         try {
-            const response = await fetch(this.scriptUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(formData)
+            // Use URL parameters instead of JSON body to avoid CORS preflight
+            const params = new URLSearchParams();
+            params.append('action', 'book');
+            Object.keys(formData).forEach(key => {
+                params.append(key, formData[key]);
+            });
+
+            const response = await fetch(`${this.scriptUrl}?${params.toString()}`, {
+                method: 'GET',
+                mode: 'cors'
             });
 
             if (!response.ok) {
