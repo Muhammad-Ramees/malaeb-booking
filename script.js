@@ -7,7 +7,7 @@ class CourtBookingSystem {
         this.bookedTimes = [];
 
         // Replace with your actual Apps Script URL
-        this.scriptUrl = 'https://script.google.com/macros/s/AKfycbw0d8GSQewiq-8viqis75I_YqpL5EeZP92OR41MbjrFUSDGxzIc6mScTnNbS0oyTOpS/exec';
+        this.scriptUrl = 'https://script.google.com/macros/s/AKfycbwjLEYW6FaxhgoO_99RGBFI4L8bMepb8LirAGCuBmIgdJ7C3KVr7Qpa0wAtskTnjj7o/exec';
 
         this.init();
     }
@@ -103,136 +103,105 @@ class CourtBookingSystem {
         }
     }
 
-    async fetchAvailability() {
-        const court = document.getElementById('court').value;
-        const date = document.getElementById('startDate').value;
+async fetchAvailability() {
+    const court = document.getElementById('court').value;
+    const date = document.getElementById('startDate').value;
 
-        if (!court || !date) {
-            this.availabilitySection.style.display = 'none';
-            return;
-        }
-
-        this.availabilitySection.style.display = 'block';
-        this.availabilityContent.innerHTML = '<div class="loading">Loading availability...</div>';
-
-        try {
-            const response = await fetch(`${this.scriptUrl}?court=${encodeURIComponent(court)}&date=${date}`);
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            if (result.error) {
-                throw new Error(result.error);
-            }
-
-            this.bookedTimes = result;
-            this.displayAvailability(result);
-            this.updateTimeDropdowns();
-        } catch (error) {
-            console.error('Fetch availability error:', error);
-            this.availabilityContent.innerHTML = `<div class="no-bookings">Could not fetch availability: ${error.message}</div>`;
-        }
+    if (!court || !date) {
+        this.availabilitySection.style.display = 'none';
+        return;
     }
 
-    displayAvailability(bookings) {
-        if (bookings.length === 0) {
-            this.availabilityContent.innerHTML = '<div class="no-bookings">✅ No bookings - Court is available all day!</div>';
-            return;
+    this.availabilitySection.style.display = 'block';
+    this.availabilityContent.innerHTML = '<div class="loading">Loading availability...</div>';
+
+    try {
+        // Use JSONP to bypass CORS
+        const result = await this.makeJsonpRequest(`${this.scriptUrl}?court=${encodeURIComponent(court)}&date=${date}`);
+        
+        if (result.error) {
+            throw new Error(result.error);
         }
 
-        const bookingElements = bookings.map(b => {
-            const startTime = new Date(b.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const endTime = new Date(b.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            return `<div class="booking-item">🟡 ${startTime} – ${endTime}</div>`;
-        }).join('');
-
-        this.availabilityContent.innerHTML = `<div style="margin-bottom:12px; font-weight: 500;">🔒 Booked Times:</div>${bookingElements}`;
+        this.bookedTimes = result;
+        this.displayAvailability(result);
+        this.updateTimeDropdowns();
+    } catch (error) {
+        console.error('Fetch availability error:', error);
+        this.availabilityContent.innerHTML = `<div class="no-bookings">Could not fetch availability: ${error.message}</div>`;
     }
+}
 
-    updateTimeDropdowns() {
-        const startTimeSelect = document.getElementById('startTime');
-        const endTimeSelect = document.getElementById('endTime');
-
-        // Reset options
-        for (const option of startTimeSelect.options) {
-            option.disabled = false;
-        }
-        for (const option of endTimeSelect.options) {
-            option.disabled = false;
-        }
-
-        this.bookedTimes.forEach(booking => {
-            const startTime = new Date(booking.start).toTimeString().slice(0, 5);
-            const endTime = new Date(booking.end).toTimeString().slice(0, 5);
-
-            for (const option of startTimeSelect.options) {
-                if (option.value >= startTime && option.value < endTime) {
-                    option.disabled = true;
-                }
-            }
-            for (const option of endTimeSelect.options) {
-                if (option.value > startTime && option.value <= endTime) {
-                    option.disabled = true;
-                }
-            }
-        });
-    }
-
-    async handleSubmit(e) {
-        e.preventDefault();
-
-        const formData = {
-            court: document.getElementById('court').value,
-            startDate: document.getElementById('startDate').value,
-            startTime: document.getElementById('startTime').value,
-            endDate: document.getElementById('endDate').value,
-            endTime: document.getElementById('endTime').value,
-            customerName: document.getElementById('customerName').value,
-            customerPhone: document.getElementById('customerPhone').value,
-            staff: document.getElementById('staff').value
+// Add this new method to your CourtBookingSystem class
+makeJsonpRequest(url) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        const callbackName = 'jsonp_callback_' + Date.now();
+        
+        // Create global callback function
+        window[callbackName] = function(data) {
+            resolve(data);
+            document.head.removeChild(script);
+            delete window[callbackName];
         };
+        
+        // Add callback parameter to URL
+        const separator = url.includes('?') ? '&' : '?';
+        script.src = `${url}${separator}callback=${callbackName}`;
+        
+        script.onerror = function() {
+            reject(new Error('JSONP request failed'));
+            document.head.removeChild(script);
+            delete window[callbackName];
+        };
+        
+        document.head.appendChild(script);
+    });
+}
 
-        this.submitBtn.disabled = true;
-        this.submitBtn.textContent = 'Booking...';
+// Replace the handleSubmit method with this version
+async handleSubmit(e) {
+    e.preventDefault();
 
-        try {
-            // Use URL parameters instead of JSON body to avoid CORS preflight
-            const params = new URLSearchParams();
-            params.append('action', 'book');
-            Object.keys(formData).forEach(key => {
-                params.append(key, formData[key]);
-            });
+    const formData = {
+        court: document.getElementById('court').value,
+        startDate: document.getElementById('startDate').value,
+        startTime: document.getElementById('startTime').value,
+        endDate: document.getElementById('endDate').value,
+        endTime: document.getElementById('endTime').value,
+        customerName: document.getElementById('customerName').value,
+        customerPhone: document.getElementById('customerPhone').value,
+        staff: document.getElementById('staff').value
+    };
 
-            const response = await fetch(`${this.scriptUrl}?${params.toString()}`, {
-                method: 'GET',
-                mode: 'cors'
-            });
+    this.submitBtn.disabled = true;
+    this.submitBtn.textContent = 'Booking...';
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+    try {
+        // Use JSONP for booking as well
+        const params = new URLSearchParams({
+            action: 'book',
+            ...formData
+        });
 
-            const result = await response.json();
+        const result = await this.makeJsonpRequest(`${this.scriptUrl}?${params.toString()}`);
 
-            if (result.success) {
-                alert(result.message || '✅ Booking confirmed successfully!');
-                this.form.reset();
-                this.setDefaultDate();
-                this.fetchAvailability();
-            } else {
-                alert(result.message || '❌ Booking failed');
-            }
-        } catch (error) {
-            console.error('Booking error:', error);
-            alert(`❌ Booking failed: ${error.message}`);
-        } finally {
-            this.submitBtn.disabled = false;
-            this.submitBtn.textContent = 'Book Court';
+        if (result.success) {
+            alert(result.message || '✅ Booking confirmed successfully!');
+            this.form.reset();
+            this.setDefaultDate();
+            this.fetchAvailability();
+        } else {
+            alert(result.message || '❌ Booking failed');
         }
+    } catch (error) {
+        console.error('Booking error:', error);
+        alert(`❌ Booking failed: ${error.message}`);
+    } finally {
+        this.submitBtn.disabled = false;
+        this.submitBtn.textContent = 'Book Court';
     }
+}
 }
 
 document.addEventListener('DOMContentLoaded', () => new CourtBookingSystem());
