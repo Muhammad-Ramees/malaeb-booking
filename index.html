@@ -1,294 +1,63 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Court Booking System</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 480px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            color: white;
-            padding: 30px 20px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 14px;
-        }
-
-        .form-container {
-            padding: 30px 20px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #333;
-            font-size: 14px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e1e5e9;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: white;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #11998e;
-            box-shadow: 0 0 0 3px rgba(17, 153, 142, 0.1);
-        }
-
-        .form-control:disabled {
-            background: #f8f9fa;
-            color: #6c757d;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 12px;
-        }
-
-        .form-row .form-group {
-            flex: 1;
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-        }
-
-        .submit-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(17, 153, 142, 0.3);
-        }
-
-        .submit-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .availability-section {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            border-left: 4px solid #11998e;
-        }
-
-        .availability-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: #333;
-        }
-
-        .booking-item {
-            padding: 8px 12px;
-            margin-bottom: 8px;
-            background: white;
-            border-radius: 8px;
-            border-left: 3px solid #38ef7d;
-            font-size: 14px;
-            color: #495057;
-        }
-
-        .booking-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .no-bookings {
-            color: #11998e;
-            font-style: italic;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .loading {
-            text-align: center;
-            color: #6c757d;
-            font-style: italic;
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 16px 20px;
-            border-radius: 12px;
-            color: white;
-            font-weight: 500;
-            z-index: 1000;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification.success {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        }
-
-        .notification.error {
-            background: #dc3545;
-        }
-
-        .time-disabled {
-            background: #f8f9fa !important;
-            color: #6c757d !important;
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                margin: 0;
-                border-radius: 0;
-                min-height: 100vh;
-            }
-
-            .form-row {
-                flex-direction: column;
-                gap: 0;
-            }
-
-            body {
-                padding: 0;
-            }
-        }
-
-        @media (min-width: 768px) {
-            .container {
-                max-width: 600px;
-            }
-
-            .form-container {
-                padding: 40px 30px;
-            }
-        }
-    </style>
+    <title>Malaeb Booking</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🏸 Court Booking</h1>
-            <p>Sports Academy Management</p>
-        </div>
-        <div class="form-container">
-            <form id="bookingForm">
-                <div class="form-group">
-                    <label for="court">Court Selection</label>
-                    <select id="court" class="form-control" required>
-                        <option value="">Select a court...</option>
-                        <option value="7-a-side">7-a-side</option>
-                        <option value="5-a-side 1">5-a-side 1</option>
-                        <option value="5-a-side 2">5-a-side 2</option>
-                    </select>
-                </div>
+        <h1>Malaeb Booking</h1>
+        <form id="booking-form">
+            <label for="ground">Select Ground:</label>
+            <select id="ground" required>
+                <option value="5A">5A</option>
+                <option value="5B">5B</option>
+                <option value="7A">7A</option>
+            </select>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="startDate">Start Date</label>
-                        <input type="date" id="startDate" class="form-control" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="startTime">Start Time</label>
-                        <select id="startTime" class="form-control" required>
-                            <option value="">Select time...</option>
-                        </select>
-                    </div>
-                </div>
+            <label for="date">Select Date:</label>
+            <input type="date" id="date" required>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="endDate">End Date</label>
-                        <input type="date" id="endDate" class="form-control" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="endTime">End Time</label>
-                        <select id="endTime" class="form-control" required>
-                            <option value="">Select time...</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="customerName">Customer Name</label>
-                    <input type="text" id="customerName" class="form-control" placeholder="Enter customer name"
-                        required>
-                </div>
+            <label for="start-time">Start Time:</label>
+            <input type="time" id="start-time" required>
 
-                <div class="form-group">
-                    <label for="customerPhone">Customer Phone</label>
-                    <input type="tel" id="customerPhone" class="form-control" placeholder="Enter customer phone"
-                        required>
-                </div>
+            <label for="duration">Duration (Hours):</label>
+            <select id="duration" required>
+                <option value="1">1 hour</option>
+                <option value="1.5">1.5 hours</option>
+                <option value="2">2 hours</option>
+                <option value="2.5">2.5 hours</option>
+                <option value="3">3 hours</option>
+                <option value="3.5">3.5 hours</option>
+            </select>
 
-                <div class="form-group">
-                    <label for="staff">Booked By (Staff Name)</label>
-                    <input type="text" id="staff" class="form-control" placeholder="Enter staff name" required />
-                </div>
+            <label for="team-name">Team Name:</label>
+            <input type="text" id="team-name" required>
 
-                <button type="submit" id="submitBtn" class="submit-btn" disabled>
-                    Book Court
-                </button>
-            </form>
+            <label for="phone">Phone Number:</label>
+            <input type="tel" id="phone" required>
 
-            <div class="availability-section" id="availabilitySection" style="display:none;">
-                <div class="availability-title">📅 Court Availability</div>
-                <div id="availabilityContent"></div>
-            </div>
-        </div>
+            <label for="eid">Emirates ID:</label>
+            <input type="text" id="eid" required>
+
+            <label for="ref">Reference Name:</label>
+            <input type="text" id="ref">
+
+            <label for="payment">Payment Status:</label>
+            <select id="payment" required>
+                <option value="paid">Paid</option>
+                <option value="unpaid">Unpaid</option>
+            </select>
+
+            <button type="submit">Book Slot</button>
+        </form>
+
+        <div id="message"></div>
     </div>
-<script src="./script.js"></script></body>
 
+    <script src="script.js"></script>
+</body>
 </html>
